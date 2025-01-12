@@ -1,40 +1,61 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTokenData } from '../utils/auth';
+
+interface Blog {
+  id: string;
+  title: string;
+  content: string;
+  author: {
+    id: string;
+    name: string;
+  };
+}
 
 const AdminDashboard = () => {
-  const [blogs, setBlogs] = useState<any[]>([]); // Initialize as an array
+  const navigate = useNavigate();
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [newBlog, setNewBlog] = useState({ title: '', content: '' });
-  const [editingBlog, setEditingBlog] = useState<any | null>(null);
+  const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
 
-  // Fetch blogs on initial load
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/posts');
-        const data = await response.json();
-        console.log(data); // Log the response
-
-        // Ensure the response is an array
-        if (Array.isArray(data)) {
-          setBlogs(data);
-        } else {
-          setError('Response data is not in the expected format');
-        }
-      } catch (err) {
-        setError('An error occurred while fetching blogs');
-      } finally {
-        setLoading(false);
-      }
-    };
+    const tokenData = getTokenData();
+    
+    if (!tokenData || tokenData.role !== 'ADMIN') {
+      navigate('/unauthorized');
+      return;
+    }
 
     fetchBlogs();
-  }, []);
+  }, [navigate]);
 
-  // Handle creating a new blog
+  const fetchBlogs = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+
+      if (Array.isArray(data.data)) {
+        setBlogs(data.data);
+      } else {
+        setError('Response data is not in the expected format');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching blogs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCreateBlog = async () => {
-    const token = localStorage.getItem('authToken');  // Retrieve token from localStorage
-    console.log('Token from localStorage (Create):', token);  // Log token to check its value
+    const token = localStorage.getItem('authToken');
+    console.log('Token from localStorage (Create):', token);
 
     if (!token) {
       setError('You must be logged in to create a blog');
@@ -46,14 +67,14 @@ const AdminDashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,  // Attach the token to the request header
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(newBlog),
       });
 
       if (response.ok) {
         const createdBlog = await response.json();
-        setBlogs([...blogs, createdBlog]);
+        setBlogs([...blogs, createdBlog.data]);
         setNewBlog({ title: '', content: '' });
       } else {
         setError('Failed to create blog');
@@ -63,10 +84,9 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle updating a blog
   const handleUpdateBlog = async (id: string) => {
-    const token = localStorage.getItem('authToken');  // Retrieve token from localStorage
-    console.log('Token from localStorage (Update):', token);  // Log token to check its value
+    const token = localStorage.getItem('authToken');
+    console.log('Token from localStorage (Update):', token);
 
     if (!token) {
       setError('You must be logged in to update a blog');
@@ -78,14 +98,16 @@ const AdminDashboard = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,  // Attach the token to the request header
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(editingBlog),
       });
 
       if (response.ok) {
         const updatedBlog = await response.json();
-        setBlogs(blogs.map((blog) => (blog._id === id ? updatedBlog : blog)));
+        setBlogs(prevBlogs =>
+          prevBlogs.map(blog => (blog.id === id ? updatedBlog.data : blog))
+        );
         setEditingBlog(null);
       } else {
         setError('Failed to update blog');
@@ -95,10 +117,9 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handle deleting a blog
   const handleDeleteBlog = async (id: string) => {
-    const token = localStorage.getItem('authToken');  // Retrieve token from localStorage
-    console.log('Token from localStorage (Delete):', token);  // Log token to check its value
+    const token = localStorage.getItem('authToken');
+    console.log('Token from localStorage (Delete):', token);
 
     if (!token) {
       setError('You must be logged in to delete a blog');
@@ -109,12 +130,12 @@ const AdminDashboard = () => {
       const response = await fetch(`http://localhost:3000/api/posts/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,  // Attach the token to the request header
+          'Authorization': `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
-        setBlogs(blogs.filter((blog) => blog._id !== id));
+        setBlogs(prevBlogs => prevBlogs.filter(blog => blog.id !== id));
       } else {
         setError('Failed to delete blog');
       }
@@ -159,7 +180,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {blogs.length > 0 ? (
           blogs.map((blog) => (
-            <div key={blog._id} className="bg-white p-6 rounded-lg shadow-lg">
+            <div key={blog.id} className="bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold">{blog.title}</h3>
               <p className="text-gray-600 mt-2">{blog.content.substring(0, 100)}...</p>
               <button
@@ -169,7 +190,7 @@ const AdminDashboard = () => {
                 Edit
               </button>
               <button
-                onClick={() => handleDeleteBlog(blog._id)}
+                onClick={() => handleDeleteBlog(blog.id)}
                 className="text-red-600 hover:text-red-800 mt-4 inline-block ml-4"
               >
                 Delete
@@ -182,33 +203,37 @@ const AdminDashboard = () => {
       </div>
 
       {editingBlog && (
-        <div className="mt-6">
-          <h3 className="text-2xl font-semibold mb-4">Edit Blog</h3>
-          <input
-            type="text"
-            className="border p-2 w-full mb-2"
-            placeholder="Title"
-            value={editingBlog.title}
-            onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value })}
-          />
-          <textarea
-            className="border p-2 w-full mb-2"
-            placeholder="Content"
-            value={editingBlog.content}
-            onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
-          />
-          <button
-            onClick={() => handleUpdateBlog(editingBlog._id)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
-          >
-            Update Blog
-          </button>
-          <button
-            onClick={() => setEditingBlog(null)}
-            className="bg-gray-400 text-white px-4 py-2 rounded ml-4"
-          >
-            Cancel
-          </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-2xl">
+            <h3 className="text-2xl font-semibold mb-4">Edit Blog</h3>
+            <input
+              type="text"
+              className="border p-2 w-full mb-2"
+              placeholder="Title"
+              value={editingBlog.title}
+              onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value })}
+            />
+            <textarea
+              className="border p-2 w-full mb-2"
+              placeholder="Content"
+              value={editingBlog.content}
+              onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => handleUpdateBlog(editingBlog.id)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded"
+              >
+                Update Blog
+              </button>
+              <button
+                onClick={() => setEditingBlog(null)}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

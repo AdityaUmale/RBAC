@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 
 const BlogsPage = () => {
-  const [blogs, setBlogs] = useState<any[]>([]); // Ensure it's initialized as an empty array
+  const [blogs, setBlogs] = useState<any[]>([]); 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+ 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -13,7 +14,7 @@ const BlogsPage = () => {
 
         if (response.ok) {
           // Make sure the fetched data is an array
-          setBlogs(Array.isArray(data) ? data : []);
+          setBlogs(Array.isArray(data.data) ? data.data : []);
         } else {
           setError(data.message || 'Failed to fetch blogs');
         }
@@ -25,7 +26,7 @@ const BlogsPage = () => {
     };
 
     fetchBlogs();
-  }, []);
+  }, []); 
 
   return (
     <div className="container mx-auto py-8">
@@ -40,7 +41,10 @@ const BlogsPage = () => {
             <div key={blog._id} className="bg-white p-6 rounded-lg shadow-lg">
               <h2 className="text-2xl font-semibold">{blog.title}</h2>
               <p className="text-gray-600 mt-2">{blog.content.substring(0, 100)}...</p>
-              <a href={`/blogs/${blog._id}`} className="text-indigo-600 hover:text-indigo-800 mt-4 inline-block">
+              <a
+                href={`/blogs/${blog._id}`}
+                className="text-indigo-600 hover:text-indigo-800 mt-4 inline-block"
+              >
                 Read more
               </a>
             </div>

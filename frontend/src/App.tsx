@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import { AuthProvider } from './context/AuthContext';
 import BlogsPage from './components/BlogsPage';
 import AdminDashboard from './components/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -15,10 +16,11 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/blogs" element={<BlogsPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
       <Route path='/admindashboard' element={<AdminDashboard />} />
+      </Route>
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
-      {/* Other routes will be added later */}
     </Routes>
     </AuthProvider>
   );

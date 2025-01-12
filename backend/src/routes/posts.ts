@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { createPost, getPosts, updatePost, deletePost } from '../controllers/postController';
 import authMiddleware from '../middlewares/auth';
+import roleCheckMiddleware from '../middlewares/roleCheck';
 
 const postRoutes = Router();
 
 postRoutes.get('/', getPosts);
+postRoutes.post('/', authMiddleware, roleCheckMiddleware(['ADMIN']), createPost);
+postRoutes.put('/:id', authMiddleware, roleCheckMiddleware(['ADMIN']), updatePost);
+postRoutes.delete('/:id', authMiddleware, roleCheckMiddleware(['ADMIN']), deletePost);
 
-postRoutes.post('/', authMiddleware, createPost);
-postRoutes.put('/:id', authMiddleware, updatePost);
-postRoutes.delete('/:id', authMiddleware, deletePost);
-
-export default postRoutes;
+export default postRoutes;  
