@@ -1,4 +1,12 @@
+# React + Node.js App
 
+## Overview
+
+This application uses the following technologies:
+- **React** for the frontend.
+- **Node.js** for the backend.
+- **PostgreSQL** as the database.
+- **Prisma** as the ORM for database management.
 
 ## Getting Started
 
