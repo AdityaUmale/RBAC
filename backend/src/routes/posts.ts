@@ -2,13 +2,12 @@ import { Router } from 'express';
 import { createPost, getPosts, updatePost, deletePost } from '../controllers/postController';
 import authMiddleware from '../middlewares/auth';
 
-const router = Router();
+const postRoutes = Router();
 
+postRoutes.get('/', getPosts);
 
-router.get('/', getPosts);
+postRoutes.post('/', authMiddleware, createPost);
+postRoutes.put('/:id', authMiddleware, updatePost);
+postRoutes.delete('/:id', authMiddleware, deletePost);
 
-router.post('/', authMiddleware, createPost);
-router.put('/:id', authMiddleware, updatePost);
-router.delete('/:id', authMiddleware, deletePost);
-
-export default router;
+export default postRoutes;

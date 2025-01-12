@@ -40,12 +40,15 @@ export const getPosts: RequestHandler = async (req: AuthRequest, res: Response) 
 };
 
 export const updatePost: RequestHandler = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
+    const id = parseInt(req.params.id); // Convert string to number
     const { title, content } = req.body;
     try {
         const post = await prisma.post.findUnique({
             where: {
                 id: id,
+            },
+            include: { // Include the author relation
+                author: true,
             }
         });
         if (!post) {
@@ -65,6 +68,9 @@ export const updatePost: RequestHandler = async (req: AuthRequest, res: Response
                 title,
                 content,
             },
+            include: { // Include the author in the response
+                author: true,
+            }
         });
         res.status(200).json({ message: "Post updated successfully", data: updatedPost });
     } catch (error) {
@@ -73,11 +79,14 @@ export const updatePost: RequestHandler = async (req: AuthRequest, res: Response
 };
     
 export const deletePost: RequestHandler = async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
+    const id = parseInt(req.params.id); // Convert string to number
     try {
         const post = await prisma.post.findUnique({
             where: {
                 id: id,
+            },
+            include: { // Include the author relation
+                author: true,
             }
         });
         if (!post) {
