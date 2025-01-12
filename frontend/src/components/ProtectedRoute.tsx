@@ -8,16 +8,16 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const tokenData = getTokenData();
   
-  console.log('Token Data:', tokenData); // Add this log
-  console.log('Allowed Roles:', allowedRoles); // Add this log
+  console.log('Token Data:', tokenData); 
+  console.log('Allowed Roles:', allowedRoles); 
 
   if (!tokenData) {
-    console.log('No token data found'); // Add this log
+    console.log('No token data found'); 
     return <Navigate to="/login" replace />;
   }
 
   if (!allowedRoles.includes(tokenData.role)) {
-    console.log('Role not allowed:', tokenData.role); // Add this log
+    console.log('Role not allowed:', tokenData.role);
     return <Navigate to="/unauthorized" replace />;
   }
 
