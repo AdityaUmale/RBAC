@@ -1,5 +1,5 @@
 import { Response, RequestHandler } from "express";
-import  AuthRequest  from "../types";
+import AuthRequest from "../types";
 import prisma from "../utils/db";
 
 export const createPost: RequestHandler = async (req: AuthRequest, res: Response) => {
@@ -39,15 +39,45 @@ export const getPosts: RequestHandler = async (req: AuthRequest, res: Response) 
     }
 };
 
+export const getPost: RequestHandler = async (req: AuthRequest, res: Response) => {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+        res.status(400).json({ message: "Invalid post ID" });
+        return;
+    }
+
+    try {
+        const post = await prisma.post.findUnique({
+            where: {
+                id: id,
+            },
+            include: {
+                author: true,
+            },
+        });
+
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+
+        res.status(200).json({ message: "Post retrieved successfully", data: post });
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        res.status(500).json({ message: "Error getting post" });
+    }
+};
+
 export const updatePost: RequestHandler = async (req: AuthRequest, res: Response) => {
-    const id = parseInt(req.params.id); // Convert string to number
+    const id = parseInt(req.params.id);
     const { title, content } = req.body;
     try {
         const post = await prisma.post.findUnique({
             where: {
                 id: id,
             },
-            include: { // Include the author relation
+            include: {
                 author: true,
             }
         });
@@ -68,7 +98,7 @@ export const updatePost: RequestHandler = async (req: AuthRequest, res: Response
                 title,
                 content,
             },
-            include: { // Include the author in the response
+            include: {
                 author: true,
             }
         });
@@ -79,13 +109,13 @@ export const updatePost: RequestHandler = async (req: AuthRequest, res: Response
 };
     
 export const deletePost: RequestHandler = async (req: AuthRequest, res: Response) => {
-    const id = parseInt(req.params.id); // Convert string to number
+    const id = parseInt(req.params.id);
     try {
         const post = await prisma.post.findUnique({
             where: {
                 id: id,
             },
-            include: { // Include the author relation
+            include: {
                 author: true,
             }
         });

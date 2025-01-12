@@ -8,6 +8,7 @@ import BlogsPage from './components/BlogsPage';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import UnauthorizedPage from './components/UnauthorizedPage';
+import BlogDetailPage from './components/BlogDetailPage';
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/blogs" element={<BlogsPage />} />
+      <Route path="/blogs/:id" element={<BlogDetailPage />} />
       <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
       <Route path='/admindashboard' element={<AdminDashboard />} />
       </Route>
