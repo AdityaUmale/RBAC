@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import BlogsPage from './components/BlogsPage';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import UnauthorizedPage from './components/UnauthorizedPage';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
       <Route path='/admindashboard' element={<AdminDashboard />} />
       </Route>
+      <Route path='unauthorized' element={<UnauthorizedPage />} />
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
     </Routes>
