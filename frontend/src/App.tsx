@@ -1,9 +1,20 @@
-import './index.css';
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import LoginForm from './components/auth/LoginForm';
+import RegisterForm from './components/auth/RegisterForm';
+import Dashboard from './components/Dashboard';
 
-export default function App() {
+
+function App() {
   return (
-    <h1 className="text-3xl font-bold bg-red-500">
-      Hello world!
-    </h1>
-  )
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/login" element={<LoginForm />} />
+      <Route path="/register" element={<RegisterForm />} />
+      {/* Other routes will be added later */}
+    </Routes>
+  );
 }
+
+export default App;
