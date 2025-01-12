@@ -5,15 +5,51 @@ import { useNavigate, Link } from 'react-router-dom';
 const LoginForm = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const { login, loading, error } = useAuth();
+  const [error, setError] = useState<string | null>(null); // Local error state
+  const { loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await login(email, password);
-    // Only navigate if no error occurred
-    if (!error) {
-      navigate('/dashboard');
+
+    // Reset error state on each submit
+    setError(null);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Assuming the response is structured with the token under `data.data.token`
+        const token = data.data?.token; // Check if the token exists in the response
+        console.log('Received token:', token); // Log the token to check
+
+        if (token) {
+          // Store the token in localStorage
+          localStorage.setItem('authToken', token);
+
+          // Optionally, update any authentication context here (if using context)
+          // Example: authContext.setAuthToken(token);
+
+          // Navigate to the dashboard after login
+          navigate('/dashboard');
+        } else {
+          setError('Token not received. Please try again.');
+        }
+      } else {
+        // Handle any error from the server (incorrect credentials, etc.)
+        setError(data.message || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      // Handle network or other errors
+      setError('An error occurred. Please try again later.');
     }
   };
 

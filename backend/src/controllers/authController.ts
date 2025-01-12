@@ -52,6 +52,7 @@ export const login: RequestHandler = async (req, res) => {
         }
         const token = jwt.sign({id: user.id, role: user.role, email: user.email}, process.env.JWT_SECRET as string);
         res.status(200).json({ message: "Login successful", data: { user, token }});
+        console.log(token);
     } catch (error) {
         res.status(500).json({ message: "Error logging in" });
     }
