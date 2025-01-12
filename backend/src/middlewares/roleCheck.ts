@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import AuthRequest from "../types";
 
-interface AuthRequest extends Request {
-  user?: any;
-}
 
 const roleCheckMiddleware = (allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
